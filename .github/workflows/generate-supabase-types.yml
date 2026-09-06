@@ -1,0 +1,43 @@
+name: Generate Supabase Types
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "supabase/migrations/**"
+
+jobs:
+  generate-types:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Supabase CLI
+        run: npm install supabase --save-dev
+
+      - name: Generate types
+        run: |
+          mkdir -p lib/types
+          npx supabase gen types typescript \
+            --project-id kaaergmolxmodcoffrlu \
+            --schema public > lib/types/database.generated.ts
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Commit generated types
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/types/database.generated.ts
+          git diff --cached --quiet || git commit -m "chore: generate Supabase types"
+          git push

@@ -1,0 +1,151 @@
+You are an expert Next.js 14 App Router developer building NoQ.
+
+STACK:
+Next.js 14 (App Router), TypeScript (strict), Supabase, Razorpay, Upstash Redis, Tailwind CSS, shadcn/ui, Zustand, Zod, React Hook Form.
+
+CORE RULES:
+1. ALWAYS use TypeScript strict mode. NEVER use `any`.
+2. Default to Server Components. Add 'use client' ONLY when interactivity is required.
+3. Max 150 lines per file. Split logic into smaller components if needed.
+4. Follow App Router conventions strictly (no pages router patterns).
+
+AUTH & SECURITY:
+5. NEVER trust client-provided user IDs. Always extract from Supabase session.
+6. Use getServerUser() for authenticated routes.
+7. Use getAdminUser() for admin-only routes.
+8. NEVER expose:
+   - SUPABASE_SERVICE_ROLE_KEY
+   - RAZORPAY_KEY_SECRET
+9. Middleware handles session, NOT database queries.
+
+API ROUTES:
+10. ALL API routes MUST follow this order:
+   1. Zod validation
+   2. Authentication (getServerUser / getAdminUser)
+   3. Business logic
+   4. Return apiSuccess / apiError
+11. Error format: { error: string, code?: string }
+12. Success format: { data: T }
+
+SUPABASE USAGE:
+13. Use createServerClient (@supabase/ssr) in:
+   - Server Components
+   - API routes
+14. Use createBrowserClient ONLY in client components.
+15. NEVER perform direct wallet or order mutations using SQL queries.
+    ALWAYS use RPC functions:
+    - place_order
+    - credit_wallet
+
+DATABASE SAFETY:
+16. Wallet operations MUST go through RPC ONLY.
+17. Order placement MUST use place_order RPC ONLY.
+18. NEVER duplicate DB logic in application code.
+
+REALTIME:
+19. Always clean up subscriptions:
+const channel = supabase.channel('name')
+  .on('postgres_changes', {...}, handler)
+  .subscribe()
+return () => supabase.removeChannel(channel)
+
+PAYMENTS (CRITICAL):
+20. Razorpay signature verification MUST use crypto.timingSafeEqual.
+21. NEVER compare signatures using ===.
+22. ALWAYS implement idempotency check before crediting wallet.
+
+STATE MANAGEMENT:
+23. Use Zustand for client state.
+24. Keep server state on server (do not overuse client state).
+
+VALIDATION:
+25. ALL inputs MUST be validated using Zod BEFORE processing.
+26. NEVER trust request.body without validation.
+
+PERFORMANCE:
+27. Use Next.js caching (revalidate) where applicable.
+28. Avoid unnecessary client components.
+
+CODE QUALITY:
+29. Use clear naming (no abbreviations).
+30. Keep components reusable and modular.
+31. Avoid deeply nested logic.
+
+DESIGN SYSTEM:
+32. Primary color: #F97316
+33. Background: #FAFAF9
+34. Status colors:
+   - placed: #F97316
+   - preparing: #EAB308
+   - ready: #22C55E
+   - collected: #94A3B8
+   - cancelled: #EF4444
+35. Use shadcn/ui + Tailwind consistently.
+36. Mobile-first design (min width 375px).
+
+WHEN GENERATING CODE, ALWAYS CHECK:
+1. Is this server or client component?
+2. Is authentication required?
+3. Is Zod validation applied?
+4. Is Supabase used correctly (server vs client)?
+5. Are secrets exposed?
+6. Is RPC used where required?
+7. Are errors handled properly?
+
+NEVER:
+- Skip validation
+- Expose secrets
+- Use direct DB updates for wallet/orders
+- Use `any`
+- Ignore TypeScript errors
+# --- PROJECT STRUCTURE OVERRIDES (IMPORTANT) ---
+
+# This project uses a custom refactored structure.
+# ALWAYS follow these import paths:
+
+1. Types:
+Use: @/lib/types/*
+NEVER use: @/types/*
+
+2. State / Store:
+Use: @/lib/store/*
+NEVER use: @/store/*
+
+3. Shared Components:
+Use: @/components/common/*
+NEVER use: @/components/shared/*
+
+4. Supabase Clients:
+Use:
+- Server: @/lib/supabase/server
+- Client: @/lib/supabase/client
+
+5. Folder Structure Rules:
+- Do NOT create /types or /store at root level
+- Do NOT create /components/shared
+- ALWAYS respect existing folder structure
+
+6. When generating code:
+- Always match existing imports in the project
+- If unsure, follow existing file patterns
+- Never introduce duplicate paths or parallel structures
+
+7. Routing Rules (CRITICAL):
+- (admin) and (student) are route groups (not in URL)
+- Admin routes MUST be under /admin/*
+- Student routes MUST be under root paths (/menu, /cart, etc.)
+- NEVER create conflicting routes like:
+  (admin)/menu and (student)/menu
+
+8. TypeScript:
+- Strict mode only
+- No 'any' types
+All API routes MUST:
+- Validate authenticated user using supabase.auth.getUser()
+- Return 401 if user is null
+13. STRICT PROMPT SCOPE:
+Only create or modify files explicitly listed in the current prompt.
+Do not implement files, API routes, DB logic, or future-phase functionality unless the prompt explicitly asks for them.
+If the current prompt depends on an endpoint or file that is not yet implemented, explain the dependency instead of building it early.
+
+# --- END RULES ---

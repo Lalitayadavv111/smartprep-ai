@@ -1,0 +1,1 @@
+-- Placeholder: initial NoQ schema (profiles, menu, orders, wallet RPCs) applied via Supabase CLI.
